@@ -3,7 +3,7 @@ import { useState } from 'react';
 const useWordle = (solution) => {
   const [turn, setTurn] = useState(0);
   const [currentGuess, setCurrentGuess] = useState('');
-  const [guesses, setGuesses] = useState([]); // each guess is an array
+  const [guesses, setGuesses] = useState([...Array(6)]); // each guess is an array
   const [history, setHistory] = useState([]); // each guess is a string
   const [isCorrect, setIsCorrect] = useState(false);
 
@@ -17,8 +17,8 @@ const useWordle = (solution) => {
 
     // find any green letters
     formattedGuess.forEach((l,i) => {
-      if(solutionArray[i] === l.key) {
-        formatGuess[i].color = 'green'
+      if(solution[i] === l.key) {
+        formattedGuess[i].color = 'green'
         solutionArray[i] = null
       }
     })
@@ -26,7 +26,7 @@ const useWordle = (solution) => {
     //find any yellow colors
     formattedGuess.forEach((l,i) => {
       if(solutionArray.includes(l.key) && l.color !== 'green') {
-        formatGuess[i].color = 'yellow'
+        formattedGuess[i].color = 'yellow'
         solutionArray[solutionArray.indexOf(l.key)] = null;
       }
     })
@@ -37,8 +37,22 @@ const useWordle = (solution) => {
   //add a new guess to the guesses state
   //update the isCorrect state if the guess is correct
   //add one to the turn state
-  const addNewGuess = () => {
-
+  const addNewGuess = (formattedGuess) => {
+    if (currentGuess === solution) {
+      setIsCorrect(true)
+    }
+    setGuesses((prevGuesses) => {
+      let newGuesses = [...prevGuesses]
+      newGuesses[turn] = formattedGuess
+      return newGuesses
+    });
+    setHistory((prevHistory) => {
+      return [...prevHistory, currentGuess]
+    });
+    setTurn((prevTurn) => {
+      return prevTurn + 1
+    });
+    setCurrentGuess('');
   }
 
   //handle keyup ecent & track current guess
@@ -61,7 +75,7 @@ const useWordle = (solution) => {
         return
       }
       const formatted = formatGuess();
-      console.log(formatted)
+      addNewGuess(formatted);
     }
 
     if(key === 'Backspace') {
